@@ -133,13 +133,13 @@ export default function BreakdownTable({ data }: { data: BreakdownData }) {
   const useStatusFilter = statusFilter !== 'All'
   const useCombined = useClassBased && useStatusFilter
   
-  let yearlyBreakdown: { [s: string]: { [bookingClass: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } } } | ArrayLike<{ [bookingClass: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } }>, monthlyBreakdown: { [x: string]: {} | { [month: string]: { [bookingClass: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } } } | { [month: string]: { [status: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } } } }
+  let yearlyBreakdown: any, monthlyBreakdown: any
   
   if (useCombined && data.yearly_breakdown_combined && data.monthly_breakdown_combined) {
     // Use combined data that has both class and status
     yearlyBreakdown = {}
     Object.keys(data.yearly_breakdown_combined || {}).forEach(year => {
-      const yearData = data.yearly_breakdown_combined![year]
+      const yearData = data.yearly_breakdown_combined![year] as any
       if (yearData[bookingClassFilter] && yearData[bookingClassFilter][statusFilter]) {
         yearlyBreakdown[year] = { [statusFilter]: yearData[bookingClassFilter][statusFilter] }
       }
@@ -149,7 +149,7 @@ export default function BreakdownTable({ data }: { data: BreakdownData }) {
     Object.keys(data.monthly_breakdown_combined || {}).forEach(year => {
       monthlyBreakdown[year] = {}
       Object.keys(data.monthly_breakdown_combined![year] || {}).forEach(month => {
-        const monthData = data.monthly_breakdown_combined![year][month]
+        const monthData = data.monthly_breakdown_combined![year][month] as any
         if (monthData[bookingClassFilter] && monthData[bookingClassFilter][statusFilter]) {
           monthlyBreakdown[year][month] = { [statusFilter]: monthData[bookingClassFilter][statusFilter] }
         }
@@ -168,7 +168,7 @@ export default function BreakdownTable({ data }: { data: BreakdownData }) {
   const years = Object.keys(yearlyBreakdown).sort()
 
   const availableStatuses = new Set<string>()
-  Object.values(yearlyBreakdown).forEach(yearData => {
+  Object.values(yearlyBreakdown).forEach((yearData: any) => {
     Object.keys(yearData).forEach(status => availableStatuses.add(status))
   })
   const statusOptions = ['All', ...Array.from(availableStatuses)]

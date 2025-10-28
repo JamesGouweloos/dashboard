@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { storage } from '../../../firebase.js'
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { writeFile, unlink, access, rename } from 'fs/promises'
+import { join } from 'path'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import { initializeApp } from 'firebase/app'
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore'
+
+const execAsync = promisify(exec)
+
+// Initialize Firebase Admin (for server-side)
+const firebaseConfig = {
+  apiKey: "AIzaSyD70vqTEpkDoxHrA1b0C3uJhESLti8k0uI",
+  authDomain: "dashboard-baines.firebaseapp.com",
+  projectId: "dashboard-baines",
+  storageBucket: "dashboard-baines.firebasestorage.app",
+  messagingSenderId: "490088692843",
+  appId: "1:490088692843:web:87523298f218fa3570c52e"
+}
+
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,20 +39,148 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Create a storage reference
+    // Use a completely different filename to avoid conflicts
     const timestamp = Date.now()
-    const storageRef = ref(storage, `uploads/booking_data_${timestamp}.csv`);
+    const newDataFile = join(process.cwd(), `new_booking_data_${timestamp}.csv`)
+    const finalFilePath = join(process.cwd(), 'bookingData.csv')
+    const backupFilePath = join(process.cwd(), `backup_booking_data_${timestamp}.csv`)
 
-    // Upload the file to Firebase Storage
-    await uploadBytes(storageRef, buffer);
+    try {
+      // Write to new filename
+      await writeFile(newDataFile, buffer)
+      console.log('Uploaded file saved as:', newDataFile)
 
-    // Get the download URL of the uploaded file
-    const downloadURL = await getDownloadURL(storageRef);
+      // Backup existing file if it exists (with retry)
+      let backupSuccess = false
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await access(finalFilePath)
+          await rename(finalFilePath, backupFilePath)
+          console.log('Backed up existing file to:', backupFilePath)
+          backupSuccess = true
+          break
+        } catch (error: any) {
+          console.log(`Backup attempt ${attempt} failed:`, error.message)
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+          }
+        }
+      }
 
-    return NextResponse.json({ success: true, downloadURL });
+      if (!backupSuccess) {
+        console.log('No existing file to backup or backup failed')
+      }
 
-  } catch (error) {
-    console.error('Upload failed:', error);
-    return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 })
+      // Rename new file to the expected name (with retry)
+      let renameSuccess = false
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await rename(newDataFile, finalFilePath)
+          console.log('Successfully replaced bookingData.csv')
+          renameSuccess = true
+          break
+        } catch (error: any) {
+          console.log(`Rename attempt ${attempt} failed:`, error.message)
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+          }
+        }
+      }
+
+      if (!renameSuccess) {
+        throw new Error('Failed to replace bookingData.csv after 3 attempts')
+      }
+
+      // Process the data using the Python script
+      try {
+        console.log('Starting Python processing...')
+        const { stdout, stderr } = await execAsync('python process_booking_data.py', {
+          cwd: process.cwd(),
+          timeout: 30000 // 30 second timeout
+        })
+
+        if (stderr) {
+          console.error('Python script stderr:', stderr)
+        }
+
+        console.log('Python script stdout:', stdout)
+
+        // Read the processed JSON data
+        const fs = await import('fs/promises')
+        const processedData = JSON.parse(await fs.readFile('dashboard_data.json', 'utf8'))
+
+        // Store the processed data in Firestore
+        console.log('Storing data in Firestore...')
+        await setDoc(doc(db, 'dashboard', 'data'), {
+          ...processedData,
+          lastUpdated: new Date().toISOString(),
+          uploadTimestamp: timestamp
+        })
+
+        console.log('Data successfully stored in Firestore')
+
+        // Clean up backup file on success
+        try {
+          await unlink(backupFilePath)
+          console.log('Cleaned up backup file')
+        } catch {
+          // Backup cleanup failed, not critical
+        }
+
+        return NextResponse.json({
+          message: 'File uploaded, processed, and stored in database successfully',
+          details: stdout,
+          timestamp: timestamp
+        })
+
+      } catch (error: any) {
+        console.error('Error processing file:', error)
+        
+        // Restore backup file if processing failed
+        try {
+          await access(backupFilePath)
+          await rename(backupFilePath, finalFilePath)
+          console.log('Restored backup file due to processing failure')
+        } catch (restoreError) {
+          console.error('Failed to restore backup:', restoreError)
+        }
+
+        return NextResponse.json({
+          error: 'Failed to process the uploaded file. Please check the file format.',
+          details: error.message
+        }, { status: 500 })
+      }
+
+    } catch (fileError: any) {
+      console.error('File operation error:', fileError)
+      
+      // Clean up new file if it exists
+      try {
+        await unlink(newDataFile)
+      } catch {
+        // Ignore cleanup errors
+      }
+
+      // Try to restore backup
+      try {
+        await access(backupFilePath)
+        await rename(backupFilePath, finalFilePath)
+        console.log('Restored backup file due to file operation failure')
+      } catch {
+        // Backup restore failed
+      }
+
+      return NextResponse.json({
+        error: 'Failed to save the uploaded file. Please try again.',
+        details: fileError.message
+      }, { status: 500 })
+    }
+
+  } catch (error: any) {
+    console.error('Upload error:', error)
+    return NextResponse.json({
+      error: 'Upload failed',
+      details: error.message
+    }, { status: 500 })
   }
 }
