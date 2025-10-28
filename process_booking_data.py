@@ -9,9 +9,19 @@ import json
 from datetime import datetime
 from collections import defaultdict
 import numpy as np
+import sys
+import requests
 
+def download_file(url, local_filename):
+    """Download a file from a URL"""
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename
 
-def load_and_clean_data(csv_file='bookingData_fixed.csv'):
+def load_and_clean_data(csv_file='bookingData.csv'):
     """Load and clean the booking data CSV with fixed headers"""
     # The fixed CSV has a clean single header row
     # Skip the 11 metadata rows (rows 1-11, indices 0-10)
@@ -473,10 +483,10 @@ def process_revenue_data(df):
     return results
 
 
-def process_booking_data():
+def process_booking_data(csv_file):
     """Main processing function"""
     print("Loading booking data...")
-    df = load_and_clean_data()
+    df = load_and_clean_data(csv_file)
     
     print("Applying business rules...")
     df = apply_business_rules(df)
@@ -503,4 +513,12 @@ def process_booking_data():
 
 
 if __name__ == '__main__':
-    process_booking_data()
+    if len(sys.argv) > 1:
+        file_url = sys.argv[1]
+        local_csv_file = 'bookingData.csv'
+        print(f"Downloading file from {file_url}...")
+        download_file(file_url, local_csv_file)
+        process_booking_data(local_csv_file)
+    else:
+        # For local testing, assuming the file is already present
+        process_booking_data('bookingData_fixed.csv')
