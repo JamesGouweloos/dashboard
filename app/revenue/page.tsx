@@ -6,13 +6,13 @@ import DashboardFilters from '@/components/DashboardFilters'
 import RevenueChart from '@/components/RevenueChart'
 import BookingStatusChart from '@/components/BookingStatusChart'
 import PaymentStatusChart from '@/components/PaymentStatusChart'
-import { filterDashboardData } from '@/lib/dataFilters'
+import { filterDashboardData, DashboardData } from '@/lib/dataFilters'
 import { useDataRefresh } from '@/lib/useDataRefresh'
 
 export default function RevenuePage() {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('All')
   const [classFilter, setClassFilter] = useState<string>('All')
   const refreshKey = useDataRefresh()
@@ -28,8 +28,12 @@ export default function RevenuePage() {
       const jsonData = await response.json()
       setData(jsonData)
       setLoading(false)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unknown error occurred')
+      }
       setLoading(false)
     }
   }
@@ -90,4 +94,3 @@ export default function RevenuePage() {
     </DashboardLayout>
   )
 }
-

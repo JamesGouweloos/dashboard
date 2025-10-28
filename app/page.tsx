@@ -9,13 +9,13 @@ import BookingStatusChart from '@/components/BookingStatusChart'
 import TopSourcesChart from '@/components/TopSourcesChart'
 import TopExtrasChart from '@/components/TopExtrasChart'
 import PaymentStatusChart from '@/components/PaymentStatusChart'
-import { filterDashboardData } from '@/lib/dataFilters'
+import { filterDashboardData, DashboardData, SummaryData } from '@/lib/dataFilters'
 import { useDataRefresh } from '@/lib/useDataRefresh'
 
 export default function Home() {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('All')
   const [classFilter, setClassFilter] = useState<string>('All')
   const refreshKey = useDataRefresh()
@@ -32,7 +32,11 @@ export default function Home() {
       setData(jsonData)
       setLoading(false)
     } catch (err) {
-      setError(err.message)
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unknown error occurred')
+      }
       setLoading(false)
     }
   }
@@ -103,4 +107,3 @@ export default function Home() {
     </DashboardLayout>
   )
 }
-

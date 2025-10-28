@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import DashboardFilters from '@/components/DashboardFilters'
-import { filterDashboardData } from '@/lib/dataFilters'
+import { filterDashboardData, DashboardData } from '@/lib/dataFilters'
 import { useDataRefresh } from '@/lib/useDataRefresh'
 import RevenueTimeChart from '@/components/RevenueTimeChart'
 import RevenueEfficiencyChart from '@/components/RevenueEfficiencyChart'
@@ -11,9 +11,9 @@ import TopAgentsChart from '@/components/TopAgentsChart'
 import TopSourcesChart from '@/components/TopSourcesChart'
 
 export default function PerformancePage() {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('All')
   const [classFilter, setClassFilter] = useState<string>('All')
   const refreshKey = useDataRefresh()
@@ -29,8 +29,12 @@ export default function PerformancePage() {
       const jsonData = await response.json()
       setData(jsonData)
       setLoading(false)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unknown error occurred')
+      }
       setLoading(false)
     }
   }
@@ -94,4 +98,3 @@ export default function PerformancePage() {
     </DashboardLayout>
   )
 }
-

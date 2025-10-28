@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
-import { storage } from '../../../../firebase'
+import { storage } from '../../../firebase.js'
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,43 +24,16 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now()
     const storageRef = ref(storage, `uploads/booking_data_${timestamp}.csv`);
 
-    // Upload the file
+    // Upload the file to Firebase Storage
     await uploadBytes(storageRef, buffer);
 
-    // Get the download URL
+    // Get the download URL of the uploaded file
     const downloadURL = await getDownloadURL(storageRef);
 
-    // Process the data using the Python script, passing the download URL as an argument
-    try {
-      console.log('Starting Python processing...');
-      const { stdout, stderr } = await execAsync(`python process_booking_data.py "${downloadURL}"`, {
-        cwd: process.cwd(),
-        timeout: 30000 // 30 second timeout
-      });
+    return NextResponse.json({ success: true, downloadURL });
 
-      if (stderr) {
-        console.error('Python script stderr:', stderr);
-      }
-
-      console.log('Python script stdout:', stdout);
-
-      return NextResponse.json({
-        message: 'File uploaded and processed successfully',
-        details: stdout
-      });
-
-    } catch (error: any) {
-      console.error('Error processing file:', error);
-      return NextResponse.json({
-        error: 'Failed to process the uploaded file. Please check the file format.',
-        details: error.message
-      }, { status: 500 });
-    }
-  } catch (error: any) {
-    console.error('Upload error:', error);
-    return NextResponse.json({
-      error: 'Upload failed',
-      details: error.message
-    }, { status: 500 });
+  } catch (error) {
+    console.error('Upload failed:', error);
+    return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 })
   }
 }

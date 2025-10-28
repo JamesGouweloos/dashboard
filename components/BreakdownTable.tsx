@@ -133,7 +133,7 @@ export default function BreakdownTable({ data }: { data: BreakdownData }) {
   const useStatusFilter = statusFilter !== 'All'
   const useCombined = useClassBased && useStatusFilter
   
-  let yearlyBreakdown, monthlyBreakdown
+  let yearlyBreakdown: { [s: string]: { [bookingClass: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } } } | ArrayLike<{ [bookingClass: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } }>, monthlyBreakdown: { [x: string]: {} | { [month: string]: { [bookingClass: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } } } | { [month: string]: { [status: string]: { bed_nights: number; accommodation: number; income: number; disbursements: number; revenue_total: number; outstanding: number } } } }
   
   if (useCombined && data.yearly_breakdown_combined && data.monthly_breakdown_combined) {
     // Use combined data that has both class and status

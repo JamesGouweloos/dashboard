@@ -5,13 +5,13 @@ import DashboardLayout from '@/components/DashboardLayout'
 import DashboardFilters from '@/components/DashboardFilters'
 import TopSourcesChart from '@/components/TopSourcesChart'
 import TopExtrasChart from '@/components/TopExtrasChart'
-import { filterDashboardData } from '@/lib/dataFilters'
+import { filterDashboardData, DashboardData } from '@/lib/dataFilters'
 import { useDataRefresh } from '@/lib/useDataRefresh'
 
 export default function SourcesPage() {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('All')
   const [classFilter, setClassFilter] = useState<string>('All')
   const refreshKey = useDataRefresh()
@@ -27,8 +27,12 @@ export default function SourcesPage() {
       const jsonData = await response.json()
       setData(jsonData)
       setLoading(false)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unknown error occurred')
+      }
       setLoading(false)
     }
   }
@@ -85,4 +89,3 @@ export default function SourcesPage() {
     </DashboardLayout>
   )
 }
-
