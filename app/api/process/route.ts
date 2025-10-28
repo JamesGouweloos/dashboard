@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, unlink, access, rename } from 'fs/promises'
-import { join } from 'path'
 import { initializeApp } from 'firebase/app'
-import { getFirestore, doc, setDoc } from 'firebase/firestore'
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 
-// Initialize Firebase Admin (for server-side)
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyD70vqTEpkDoxHrA1b0C3uJhESLti8k0uI",
   authDomain: "dashboard-baines.firebaseapp.com",
@@ -17,74 +15,58 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 
-// CSV processing functions
-function parseCSV(csvText: string) {
-  const lines = csvText.split('\n')
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-  
-  const data = []
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim()) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
-      const row: any = {}
-      headers.forEach((header, index) => {
-        row[header] = values[index] || ''
-      })
-      data.push(row)
-    }
-  }
-  
-  return data
-}
-
 function applyBusinessRules(data: any[]) {
-  console.log(`Processing ${data.length} bookings...`)
+  console.log('Applying business rules to data...')
   
-  // Rule 1: Remove MV-Matusadona bookings
-  let filtered = data.filter(row => row['Property'] !== 'MV - Matusadona')
-  console.log(`After Rule 1: ${filtered.length} bookings`)
+  // Rule 1: Remove all bookings for Property "MV-Matusadona"
+  let filtered = data.filter(row => {
+    const property = row['Property'] || ''
+    return !property.toLowerCase().includes('matusadona')
+  })
+  console.log(`After Rule 1 (Remove Matusadona): ${filtered.length} bookings`)
   
-  // Rule 2: Remove staff bookings (with exceptions)
-  const keywords = ['Scott', 'Brown', 'Craig', 'Featherby', 'TWF', 'Staff']
-  const exceptions = ['WB3703', 'WB4118', 'WB2748', 'WB4001', 'WB3556', 'WB4121']
-  
+  // Rule 2: Remove bookings containing specific names, with exceptions
   filtered = filtered.filter(row => {
-    const reservationName = row['Reservation name'] || ''
+    const reservationName = (row['Reservation name'] || '').toLowerCase()
     const reservationNumber = row['Reservation #'] || ''
     const source = row['Source'] || ''
     
-    // Keep exceptions
-    if (exceptions.includes(reservationNumber)) return true
+    // Check for excluded names
+    const excludedNames = ['scott', 'brown', 'craig', 'featherby', 'twf', 'staff']
+    const hasExcludedName = excludedNames.some(name => reservationName.includes(name))
     
-    // Keep "Return Guests" source
-    if (source.toLowerCase().includes('return guests')) return true
+    // Exception booking numbers
+    const exceptionNumbers = ['WB3703', 'WB4118', 'WB2748', 'WB4001', 'WB3556', 'WB4121']
+    const isException = exceptionNumbers.includes(reservationNumber)
     
-    // Remove if contains keywords
-    for (const keyword of keywords) {
-      if (reservationName.toLowerCase().includes(keyword.toLowerCase())) {
-        return false
-      }
-    }
+    // Exception for Return Guests source
+    const isReturnGuest = source.toLowerCase().includes('return guests')
     
-    return true
+    // Keep if no excluded name, or if it's an exception
+    return !hasExcludedName || isException || isReturnGuest
   })
+  console.log(`After Rule 2 (Remove staff bookings): ${filtered.length} bookings`)
   
-  console.log(`After Rule 2: ${filtered.length} bookings`)
-  
-  // Rule 3 & 4: Categorize bookings
-  filtered.forEach(row => {
+  // Rule 3 & 4: Create Booking Class
+  filtered = filtered.map(row => {
     const accommodation = parseFloat(row['Accommodation']) || 0
     const reservationNumber = row['Reservation #'] || ''
-    const zeroAccommodationExceptions = ['WB3964', 'WB3762', 'WB4193', 'WB4242']
     
-    if (accommodation === 0 && !zeroAccommodationExceptions.includes(reservationNumber)) {
-      row['Booking Class'] = 'Non-Income Generating'
-    } else {
-      row['Booking Class'] = 'Income Generating'
+    // Exception booking numbers for Non-Income Generating
+    const nonIncomeExceptions = ['WB3964', 'WB3762', 'WB4193', 'WB4242']
+    
+    let bookingClass = 'Income Generating'
+    if (accommodation === 0 && !nonIncomeExceptions.includes(reservationNumber)) {
+      bookingClass = 'Non-Income Generating'
+    }
+    
+    return {
+      ...row,
+      'Booking Class': bookingClass
     }
   })
   
-  // Calculate Income and Disbursements
+  // Rule 5: Create Income column
   const incomeColumns = [
     'WOMEN JEWELRY', 'Shop Purchases', 'Service Fee', 'Private guide and vehicle',
     'Private guide and boat', 'POS Misc', 'Operational', 'Miscellaneous', 'MEN JEWELRY',
@@ -101,26 +83,35 @@ function applyBusinessRules(data: any[]) {
     'Bar: Cordials', 'Bar: Comp/Kitchen', 'Bar: Cider', 'Bar: Champagne / Sparkling',
     'Bar: Brandy', 'Bar: Beer', 'Bar: Aperitif', 'Baines\' River Camp',
     'BAR: ISLAND SUNDOWNERS', 'BAR: CORKAGE', 'Accommodation at Baine\'s',
-    'Accommodation'
+    '10% Discount', 'Accommodation'
   ]
   
-  filtered.forEach(row => {
+  filtered = filtered.map(row => {
     let income = 0
     incomeColumns.forEach(col => {
-      if (row[col]) {
-        income += parseFloat(row[col]) || 0
-      }
+      const value = parseFloat(row[col]) || 0
+      income += value
     })
     
-    // Subtract discounts
-    if (row['10% Discount']) {
-      income -= parseFloat(row['10% Discount']) || 0
+    return {
+      ...row,
+      'Income': income
     }
-    
-    row['Income'] = income
-    row['Disbursements'] = (parseFloat(row['Revenue Total']) || 0) - income
   })
   
+  // Rule 6: Create Disbursements column
+  filtered = filtered.map(row => {
+    const revenueTotal = parseFloat(row['Revenue Total']) || 0
+    const income = parseFloat(row['Income']) || 0
+    const disbursements = revenueTotal - income
+    
+    return {
+      ...row,
+      'Disbursements': disbursements
+    }
+  })
+  
+  console.log('Business rules applied successfully')
   return filtered
 }
 
@@ -465,76 +456,63 @@ function createCompleteBreakdowns(data: any[]) {
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.formData()
-    const file: File | null = data.get('file') as unknown as File
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
-    }
-
-    // Validate file type
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      return NextResponse.json({ error: 'Only CSV files are allowed' }, { status: 400 })
-    }
-
-    // Convert file to buffer and text
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const csvText = buffer.toString('utf-8')
-
-    console.log('Processing CSV file...')
+    console.log('Processing stored data...')
     
-    try {
-      // Parse CSV data
-      const rawData = parseCSV(csvText)
-      console.log(`Parsed ${rawData.length} rows from CSV`)
-      
-      // Apply business rules
-      const processedData = applyBusinessRules(rawData)
-      console.log(`After processing: ${processedData.length} bookings`)
-      
-      // Create comprehensive breakdowns
-      const breakdowns = createCompleteBreakdowns(processedData)
-      console.log('Created data breakdowns')
-      
-      // Store the processed data in Firestore
-      console.log('Storing data in Firestore...')
-      
-      // Store comprehensive dashboard data
-      await setDoc(doc(db, 'dashboard', 'data'), {
-        ...breakdowns,
-        lastUpdated: new Date().toISOString(),
-        uploadTimestamp: Date.now()
-      })
-      
-      // Store raw processed data for future processing
-      await setDoc(doc(db, 'dashboard', 'raw_data'), {
-        bookings: processedData,
-        lastUpdated: new Date().toISOString(),
-        uploadTimestamp: Date.now(),
-        totalBookings: processedData.length
-      })
-
-      console.log('Data successfully stored in Firestore')
-
+    // Get raw data from Firestore
+    const rawDataDoc = await getDoc(doc(db, 'dashboard', 'raw_data'))
+    
+    if (!rawDataDoc.exists()) {
       return NextResponse.json({
-        message: 'File uploaded and processed successfully',
-        details: `Processed ${processedData.length} bookings`,
-        timestamp: Date.now()
-      })
-
-    } catch (error: any) {
-      console.error('Error processing file:', error)
-      return NextResponse.json({
-        error: 'Failed to process the uploaded file. Please check the file format.',
-        details: error.message
-      }, { status: 500 })
+        error: 'No raw data found. Please upload a CSV file first.'
+      }, { status: 404 })
     }
-
-  } catch (error: any) {
-    console.error('Upload error:', error)
+    
+    const rawData = rawDataDoc.data()
+    const bookings = rawData.bookings || []
+    
+    console.log(`Found ${bookings.length} bookings to reprocess`)
+    
+    if (bookings.length === 0) {
+      return NextResponse.json({
+        error: 'No bookings found in stored data.'
+      }, { status: 404 })
+    }
+    
+    // Apply business rules
+    const processedData = applyBusinessRules(bookings)
+    console.log(`After processing: ${processedData.length} bookings`)
+    
+    // Create comprehensive breakdowns
+    const breakdowns = createCompleteBreakdowns(processedData)
+    console.log('Created data breakdowns')
+    
+    // Update the dashboard data
+    await setDoc(doc(db, 'dashboard', 'data'), {
+      ...breakdowns,
+      lastUpdated: new Date().toISOString(),
+      processedTimestamp: Date.now()
+    })
+    
+    // Update the raw data with reprocessed data
+    await setDoc(doc(db, 'dashboard', 'raw_data'), {
+      bookings: processedData,
+      lastUpdated: new Date().toISOString(),
+      processedTimestamp: Date.now(),
+      totalBookings: processedData.length
+    })
+    
+    console.log('Data reprocessed and stored successfully')
+    
     return NextResponse.json({
-      error: 'Upload failed',
+      message: 'Data reprocessed successfully',
+      details: `Processed ${processedData.length} bookings`,
+      timestamp: new Date().toISOString()
+    })
+    
+  } catch (error: any) {
+    console.error('Processing error:', error)
+    return NextResponse.json({
+      error: 'Failed to process stored data',
       details: error.message
     }, { status: 500 })
   }
