@@ -14,10 +14,21 @@ interface SummaryData {
 }
 
 export default function SummaryCards({ data }: { data: SummaryData }) {
+  // Provide default values to prevent undefined errors
+  const safeData = {
+    total_bookings: data?.total_bookings || 0,
+    total_revenue: data?.total_revenue || 0,
+    total_payments: data?.total_payments || 0,
+    total_outstanding: data?.total_outstanding || 0,
+    total_bed_nights: data?.total_bed_nights || 0,
+    total_pax: data?.total_pax || 0,
+    report_generated: data?.report_generated || new Date().toISOString()
+  }
+
   const cards = [
     {
       title: 'Total Revenue',
-      value: `$${data.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `$${safeData.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: DollarSign,
       color: 'bg-blue-500',
       bgColor: 'bg-blue-50',
@@ -25,7 +36,7 @@ export default function SummaryCards({ data }: { data: SummaryData }) {
     },
     {
       title: 'Total Bookings',
-      value: data.total_bookings.toString(),
+      value: safeData.total_bookings.toString(),
       icon: Calendar,
       color: 'bg-green-500',
       bgColor: 'bg-green-50',
@@ -33,7 +44,7 @@ export default function SummaryCards({ data }: { data: SummaryData }) {
     },
     {
       title: 'Bed Nights',
-      value: data.total_bed_nights.toString(),
+      value: safeData.total_bed_nights.toString(),
       icon: Moon,
       color: 'bg-purple-500',
       bgColor: 'bg-purple-50',
@@ -41,7 +52,7 @@ export default function SummaryCards({ data }: { data: SummaryData }) {
     },
     {
       title: 'Total Guests',
-      value: data.total_pax.toString(),
+      value: safeData.total_pax.toString(),
       icon: Users,
       color: 'bg-orange-500',
       bgColor: 'bg-orange-50',
@@ -65,7 +76,7 @@ export default function SummaryCards({ data }: { data: SummaryData }) {
               <div className={`${card.bgColor} p-3 rounded-lg`}>
                 <Icon className={`h-6 w-6 ${card.textColor}`} />
               </div>
-              <div className="text-right">
+              <div className="text-right tabular-nums">
                 <p className="text-sm text-gray-600">{card.title}</p>
                 <p className="text-2xl font-bold text-gray-900">{card.value}</p>
               </div>
