@@ -9,6 +9,26 @@ interface ExtrasData {
 }
 
 export default function TopExtrasChart({ data }: { data: ExtrasData }) {
+  // Handle undefined/null data
+  if (!data || typeof data !== 'object') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
+        <div className="flex items-center space-x-2 mb-6">
+          <Star className="h-5 w-5 text-primary-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Top Revenue Extras</h2>
+        </div>
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          No data available
+        </div>
+      </motion.div>
+    )
+  }
+
   const chartData = Object.entries(data)
     .map(([name, revenue]) => ({
       name: name.length > 25 ? name.substring(0, 25) + '...' : name,

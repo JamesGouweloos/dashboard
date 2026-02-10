@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { initializeApp } from 'firebase/app'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyD70vqTEpkDoxHrA1b0C3uJhESLti8k0uI",
@@ -36,7 +39,7 @@ function applyBusinessRules(data: any[]) {
     const hasExcludedName = excludedNames.some(name => reservationName.includes(name))
     
     // Exception booking numbers
-    const exceptionNumbers = ['WB3703', 'WB4118', 'WB2748', 'WB4001', 'WB3556', 'WB4121']
+    const exceptionNumbers = ['WB3703', 'WB4118', 'WB2748', 'WB4001', 'WB3556', 'WB4121', 'WB4194', 'WB4362']
     const isException = exceptionNumbers.includes(reservationNumber)
     
     // Exception for Return Guests source
@@ -123,8 +126,12 @@ function createCompleteBreakdowns(data: any[]) {
     total_bookings: data.length,
     total_revenue: data.reduce((sum, row) => sum + (parseFloat(row['Revenue Total']) || 0), 0),
     total_bed_nights: data.reduce((sum, row) => sum + (parseInt(row['Bed nights']) || 0), 0),
+    total_pax: data.reduce((sum, row) => sum + (parseInt(row['PAX']) || 0), 0),
+    total_payments: data.reduce((sum, row) => sum + (parseFloat(row['Total amount paid']) || 0), 0),
+    total_outstanding: data.reduce((sum, row) => sum + (parseFloat(row['Total amount outstanding']) || 0), 0),
     income_generating: data.filter(row => row['Booking Class'] === 'Income Generating').length,
-    non_income_generating: data.filter(row => row['Booking Class'] === 'Non-Income Generating').length
+    non_income_generating: data.filter(row => row['Booking Class'] === 'Non-Income Generating').length,
+    report_generated: new Date().toISOString()
   }
   
   // Breakdown by status
@@ -144,11 +151,21 @@ function createCompleteBreakdowns(data: any[]) {
   data.forEach(row => {
     const bookingClass = row['Booking Class'] || 'Unknown'
     if (!by_booking_class[bookingClass]) {
-      by_booking_class[bookingClass] = { bookings: 0, revenue: 0, bed_nights: 0 }
+      by_booking_class[bookingClass] = { 
+        count: 0, 
+        revenue: 0, 
+        bed_nights: 0,
+        income: 0,
+        disbursements: 0,
+        outstanding: 0
+      }
     }
-    by_booking_class[bookingClass].bookings++
+    by_booking_class[bookingClass].count++
     by_booking_class[bookingClass].revenue += parseFloat(row['Revenue Total']) || 0
     by_booking_class[bookingClass].bed_nights += parseInt(row['Bed nights']) || 0
+    by_booking_class[bookingClass].income += parseFloat(row['Income']) || 0
+    by_booking_class[bookingClass].disbursements += parseFloat(row['Disbursements']) || 0
+    by_booking_class[bookingClass].outstanding += parseFloat(row['Total amount outstanding']) || 0
   })
   
   // Breakdown by source
@@ -435,6 +452,63 @@ function createCompleteBreakdowns(data: any[]) {
     }
   })
   
+  // Top extras calculation
+  const top_extras: any = {}
+  const incomeColumns = [
+    'WOMEN JEWELRY', 'Shop Purchases', 'Service Fee', 'Private guide and vehicle',
+    'Private guide and boat', 'POS Misc', 'Operational', 'Miscellaneous', 'MEN JEWELRY',
+    'Luxury Family Suite', 'Luxury Double Suite', 'Lunch ', 'Gratuity', 'Generator Fees',
+    'Game Drive National Park', 'Game Drive GMA', 'Fuel', 'Fishing National Park full-day 26',
+    'Fishing National Park', 'Fishing GMA', 'F&B', 'F & B', 'Extra Activity in the GMA',
+    'Early Check-In / Late Check-Out', 'Dual Property Booking - Baines\' and Matusadona - T',
+    'Drinks Tab', 'Curio: VR Prints', 'Curio: Short Sleeve', 'Curio: Luggage',
+    'Curio: Long Sleeve', 'Curio: Jacket', 'Curio: Head & Waist Wear', 'Curio: Golfers',
+    'Curio: Dress', 'Curio Shop', 'CURIO', 'COVID TEST - BRC', 'Booking Fee',
+    'Boat Cruises GMA', 'Barter Agreement', 'Bar: White Wine', 'Bar: White House',
+    'Bar: Whisky', 'Bar: Vodka', 'Bar: Soft Drinks', 'Bar: Single Malt', 'Bar: Rum',
+    'Bar: Rose House', 'Bar: Red Wine', 'Bar: Red House', 'Bar: Liqueurs', 'Bar: Gin',
+    'Bar: Cordials', 'Bar: Comp/Kitchen', 'Bar: Cider', 'Bar: Champagne / Sparkling',
+    'Bar: Brandy', 'Bar: Beer', 'Bar: Aperitif', 'Baines\' River Camp',
+    'BAR: ISLAND SUNDOWNERS', 'BAR: CORKAGE', 'Accommodation at Baine\'s',
+    '10% Discount', 'Accommodation'
+  ]
+  
+  data.forEach(row => {
+    incomeColumns.forEach(col => {
+      const value = parseFloat(row[col]) || 0
+      if (value > 0) {
+        if (!top_extras[col]) {
+          top_extras[col] = 0
+        }
+        top_extras[col] += value
+      }
+    })
+  })
+  
+  // Payment status breakdown
+  const payment_status = {
+    fully_paid: 0,
+    partially_paid: 0,
+    unpaid: 0,
+    overpaid: 0
+  }
+  
+  data.forEach(row => {
+    const totalPaid = parseFloat(row['Total amount paid']) || 0
+    const totalOutstanding = parseFloat(row['Total amount outstanding']) || 0
+    const totalRevenue = parseFloat(row['Revenue Total']) || 0
+    
+    if (totalOutstanding === 0 && totalPaid > 0) {
+      payment_status.fully_paid++
+    } else if (totalPaid > 0 && totalOutstanding > 0) {
+      payment_status.partially_paid++
+    } else if (totalPaid === 0 && totalOutstanding > 0) {
+      payment_status.unpaid++
+    } else if (totalPaid > totalRevenue && totalRevenue > 0) {
+      payment_status.overpaid++
+    }
+  })
+  
   console.log('Comprehensive breakdowns created successfully')
   
   return {
@@ -444,6 +518,8 @@ function createCompleteBreakdowns(data: any[]) {
     by_source,
     by_agent,
     revenue_trends,
+    top_extras,
+    payment_status,
     yearly_breakdown,
     monthly_breakdown,
     yearly_breakdown_by_class,
@@ -456,7 +532,7 @@ function createCompleteBreakdowns(data: any[]) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Processing stored data...')
+    console.log('Reprocessing stored data...')
     
     // Get raw data from Firestore
     const rawDataDoc = await getDoc(doc(db, 'dashboard', 'raw_data'))
@@ -478,35 +554,33 @@ export async function POST(request: NextRequest) {
       }, { status: 404 })
     }
     
-    // Apply business rules
-    const processedData = applyBusinessRules(bookings)
-    console.log(`After processing: ${processedData.length} bookings`)
+    // Convert bookings back to CSV format for Cloud Function
+    const csvContent = convertBookingsToCSV(bookings)
     
-    // Create comprehensive breakdowns
-    const breakdowns = createCompleteBreakdowns(processedData)
-    console.log('Created data breakdowns')
+    // Call the Cloud Function
+    const cloudFunctionUrl = 'https://us-central1-dashboard-baines.cloudfunctions.net/process_booking_data'
     
-    // Update the dashboard data
-    await setDoc(doc(db, 'dashboard', 'data'), {
-      ...breakdowns,
-      lastUpdated: new Date().toISOString(),
-      processedTimestamp: Date.now()
+    const response = await fetch(cloudFunctionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/csv',
+      },
+      body: csvContent
     })
     
-    // Update the raw data with reprocessed data
-    await setDoc(doc(db, 'dashboard', 'raw_data'), {
-      bookings: processedData,
-      lastUpdated: new Date().toISOString(),
-      processedTimestamp: Date.now(),
-      totalBookings: processedData.length
-    })
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Cloud Function failed: ${response.status} ${errorText}`)
+    }
     
-    console.log('Data reprocessed and stored successfully')
+    const result = await response.json()
+    console.log('Cloud Function reprocessing completed:', result.message)
     
     return NextResponse.json({
       message: 'Data reprocessed successfully',
-      details: `Processed ${processedData.length} bookings`,
-      timestamp: new Date().toISOString()
+      details: result.message,
+      summary: result.summary,
+      timestamp: result.timestamp
     })
     
   } catch (error: any) {
@@ -516,4 +590,28 @@ export async function POST(request: NextRequest) {
       details: error.message
     }, { status: 500 })
   }
+}
+
+function convertBookingsToCSV(bookings: any[]): string {
+  if (bookings.length === 0) return ''
+  
+  // Get headers from the first booking
+  const headers = Object.keys(bookings[0])
+  
+  // Create CSV content
+  const csvRows = [headers.join(',')]
+  
+  for (const booking of bookings) {
+    const values = headers.map(header => {
+      const value = booking[header]
+      // Escape commas and quotes in values
+      if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+        return `"${value.replace(/"/g, '""')}"`
+      }
+      return value || ''
+    })
+    csvRows.push(values.join(','))
+  }
+  
+  return csvRows.join('\n')
 }

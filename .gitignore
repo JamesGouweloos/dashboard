@@ -19,6 +19,11 @@ dist/
 .env.test.local
 .env.production.local
 
+# Firebase service account keys (NEVER commit these!)
+service-account-key.json
+*-service-account*.json
+firebase-service-account*.json
+
 # Python
 __pycache__/
 *.py[cod]
@@ -43,6 +48,18 @@ bookingData_fixed.csv
 temp_*.csv
 new_booking_data_*.csv
 backup_booking_data_*.csv
+filtered_*.csv
+*_comparison*.json
+*_discrepancy*.json
+*_report*.json
+
+# Test files
+test_*.py
+*_test.py
+analyze_*.py
+compare_*.py
+check_*.py
+prepare_*.py
 
 # OS
 .DS_Store

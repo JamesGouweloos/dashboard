@@ -1,14 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
+import DashboardFilters from '@/components/DashboardFilters'
+import SummaryCards from '@/components/SummaryCards'
 import BreakdownTable from '@/components/BreakdownTable'
 import { useDataRefresh } from '@/lib/useDataRefresh'
+import { filterDashboardData, DashboardData } from '@/lib/dataFilters'
 
 export default function AnalysisPage() {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>('All')
+  const [classFilter, setClassFilter] = useState<string>('All')
   const refreshKey = useDataRefresh()
 
   useEffect(() => {
@@ -17,7 +22,7 @@ export default function AnalysisPage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/data')
+      const response = await fetch('/api/data', { cache: 'no-store' })
       if (!response.ok) throw new Error('Failed to fetch data')
       const jsonData = await response.json()
       setData(jsonData)
@@ -27,6 +32,11 @@ export default function AnalysisPage() {
       setLoading(false)
     }
   }
+
+  const filteredData = useMemo(() => {
+    if (!data) return null
+    return filterDashboardData(data, statusFilter, classFilter)
+  }, [data, statusFilter, classFilter])
 
   if (loading) {
     return (
@@ -54,16 +64,28 @@ export default function AnalysisPage() {
     )
   }
 
-  if (!data) return null
+  if (!data || !filteredData) return null
 
   return (
     <DashboardLayout>
+      <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Detailed Analysis</h1>
-        <p className="text-gray-600 mb-6">
+          <p className="text-gray-600">
           Yearly and monthly breakdown with booking details and filtering options
         </p>
-        <BreakdownTable data={data} />
+        </div>
+
+        <DashboardFilters
+          statusFilter={statusFilter}
+          classFilter={classFilter}
+          onStatusFilterChange={setStatusFilter}
+          onClassFilterChange={setClassFilter}
+        />
+
+        <SummaryCards data={filteredData.summary} />
+
+        <BreakdownTable data={filteredData} />
       </div>
     </DashboardLayout>
   )

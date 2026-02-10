@@ -1,0 +1,5 @@
+functions-framework==3.*
+firebase-functions==0.1.*
+google-cloud-firestore==2.*
+pandas==2.*
+numpy==1.*

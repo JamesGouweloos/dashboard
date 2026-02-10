@@ -14,7 +14,26 @@ interface BookingStatus {
 }
 
 export default function BookingStatusChart({ data }: { data: BookingStatus }) {
-  const chartData = Object.entries(data).map(([status, values]) => ({
+  if (!data || typeof data !== 'object') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
+        <div className="flex items-center space-x-2 mb-6">
+          <FileText className="h-5 w-5 text-primary-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Booking Status</h2>
+        </div>
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          No data available
+        </div>
+      </motion.div>
+    )
+  }
+
+  const chartData = Object.entries(data || {}).map(([status, values]) => ({
     name: status,
     value: values.count,
     revenue: values.revenue

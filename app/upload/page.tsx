@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import FileUpload from '@/components/FileUpload'
+import OccupancyFileUpload from '@/components/OccupancyFileUpload'
+import GuestFileUpload from '@/components/GuestFileUpload'
+import GuestFeedbackFileUpload from '@/components/GuestFeedbackFileUpload'
 import ReprocessData from '@/components/ReprocessData'
+import BrandAssetUpload from '@/components/BrandAssetUpload'
 import { useRealtimeData } from '@/lib/useRealtimeData'
 
 export default function UploadPage() {
@@ -50,29 +54,15 @@ export default function UploadPage() {
 
         <FileUpload onUploadComplete={handleUploadComplete} />
 
+        <OccupancyFileUpload onUploadComplete={handleUploadComplete} />
+
+        <GuestFileUpload onUploadComplete={handleUploadComplete} />
+
+        <GuestFeedbackFileUpload onUploadComplete={handleUploadComplete} />
+
+        <BrandAssetUpload />
+
         <ReprocessData />
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">Upload Process</h3>
-          <ol className="text-sm text-blue-800 space-y-1">
-            <li>1. Select or drag your CSV file</li>
-            <li>2. File is validated and saved to Firebase Storage</li>
-            <li>3. JavaScript processes the data and applies business rules</li>
-            <li>4. Processed data is stored in Firestore database</li>
-            <li>5. All dashboard pages automatically refresh with new data</li>
-          </ol>
-        </div>
-
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-yellow-900 mb-2">Important Notes</h3>
-          <ul className="text-sm text-yellow-800 space-y-1">
-            <li>• The CSV file must have the same format as the current dataset</li>
-            <li>• Uploading will replace all current data</li>
-            <li>• Processing may take 10-30 seconds depending on file size</li>
-            <li>• All business rules will be applied to the new data</li>
-            <li>• Charts and tables will update automatically</li>
-          </ul>
-        </div>
       </div>
     </DashboardLayout>
   )

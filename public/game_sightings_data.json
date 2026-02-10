@@ -1,0 +1,14 @@
+[
+  {
+    "id": "trip-1762781507355-29vi9ybdh",
+    "date": "2025-11-10",
+    "guide": "James",
+    "species": [
+      "Lion",
+      "Wild Dog"
+    ],
+    "timeOfDay": "AM",
+    "location": "GMA",
+    "timestamp": "2025-11-10T13:31:47.355Z"
+  }
+]

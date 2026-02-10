@@ -1,0 +1,110 @@
+[
+  {
+    "id": "pin-1762768343606-20u26b",
+    "name": "Zambezi Grande",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.748320727925089,
+    "lng": 29.27818002130151,
+    "createdAt": "2025-11-10T09:52:23.606Z"
+  },
+  {
+    "id": "pin-1762768371105-etfvnj",
+    "name": "Kasaka River Lodge",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.736817116043857,
+    "lng": 29.300133845868974,
+    "createdAt": "2025-11-10T09:52:51.105Z"
+  },
+  {
+    "id": "pin-1762768389094-c2yftt",
+    "name": "Royal Zambezi Lodge",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.72729568108228,
+    "lng": 29.315336156810275,
+    "createdAt": "2025-11-10T09:53:09.094Z"
+  },
+  {
+    "id": "pin-1762768409012-7nrcak",
+    "name": "Chachacha",
+    "type": "camp",
+    "description": "",
+    "lat": -15.723577863162413,
+    "lng": 29.322630270983094,
+    "createdAt": "2025-11-10T09:53:29.013Z"
+  },
+  {
+    "id": "pin-1762768433651-186iv4",
+    "name": "Conservation Lower Zambezi",
+    "type": "camp",
+    "description": "",
+    "lat": -15.718238544734854,
+    "lng": 29.334588556212296,
+    "createdAt": "2025-11-10T09:53:53.651Z"
+  },
+  {
+    "id": "pin-1762768456656-oy7gui",
+    "name": "Chongwe River Camp",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.714944001801515,
+    "lng": 29.337938216346764,
+    "createdAt": "2025-11-10T09:54:16.656Z"
+  },
+  {
+    "id": "pin-1762768476761-f4h4u9",
+    "name": "LZNP Checkpoint",
+    "type": "feature",
+    "description": "",
+    "lat": -15.715016296419098,
+    "lng": 29.3423507494085,
+    "createdAt": "2025-11-10T09:54:36.761Z"
+  },
+  {
+    "id": "pin-1762768516004-2kndzh",
+    "name": "Nyamepi Camping Site",
+    "type": "camp",
+    "description": "",
+    "lat": -15.719911615092348,
+    "lng": 29.366456681284408,
+    "createdAt": "2025-11-10T09:55:16.004Z"
+  },
+  {
+    "id": "pin-1762768546135-tc1g6c",
+    "name": "Lower Zambezi Lodge",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.751779945256995,
+    "lng": 29.268443751286778,
+    "createdAt": "2025-11-10T09:55:46.135Z"
+  },
+  {
+    "id": "pin-1762768563538-jvljh0",
+    "name": "Munyemeshi River Lodge",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.757521083401885,
+    "lng": 29.254411681428632,
+    "createdAt": "2025-11-10T09:56:03.538Z"
+  },
+  {
+    "id": "pin-1762768583993-ki0tqy",
+    "name": "Baines' River Camp",
+    "type": "lodge",
+    "description": "",
+    "lat": -15.76296262385302,
+    "lng": 29.231860835943948,
+    "createdAt": "2025-11-10T09:56:23.993Z"
+  },
+  {
+    "id": "pin-1762768605856-gjmibo",
+    "name": "Mvuu Lodge",
+    "type": "camp",
+    "description": "",
+    "lat": -15.76534776922665,
+    "lng": 29.219103176260113,
+    "createdAt": "2025-11-10T09:56:45.856Z"
+  }
+]

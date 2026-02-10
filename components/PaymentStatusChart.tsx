@@ -12,11 +12,31 @@ interface PaymentStatus {
 }
 
 export default function PaymentStatusChart({ data }: { data: PaymentStatus }) {
+  // Handle undefined/null data
+  if (!data || typeof data !== 'object') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
+        <div className="flex items-center space-x-2 mb-6">
+          <CreditCard className="h-5 w-5 text-primary-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Payment Status</h2>
+        </div>
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          No data available
+        </div>
+      </motion.div>
+    )
+  }
+
   const chartData = [
-    { name: 'Fully Paid', value: data.fully_paid },
-    { name: 'Partially Paid', value: data.partially_paid },
-    { name: 'Unpaid', value: data.unpaid },
-    { name: 'Overpaid', value: data.overpaid },
+    { name: 'Fully Paid', value: data.fully_paid || 0 },
+    { name: 'Partially Paid', value: data.partially_paid || 0 },
+    { name: 'Unpaid', value: data.unpaid || 0 },
+    { name: 'Overpaid', value: data.overpaid || 0 },
   ].filter(item => item.value > 0)
 
   const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']

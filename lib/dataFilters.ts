@@ -26,81 +26,29 @@ export interface DashboardData {
 export function filterDashboardData(
   data: DashboardData,
   statusFilter: string,
-  classFilter: string
+  classFilter: string,
+  selectedYears: number[] = []
 ): DashboardData {
   if (!data) return data
 
   const filteredData = { ...data }
 
-  // If both filters are active, we need to calculate intersection
-  if (statusFilter !== 'All' && classFilter !== 'All') {
-    // Look for combined breakdown data
-    const combinedData = data.yearly_breakdown_combined
-    if (combinedData) {
-      // Calculate totals from combined breakdown
-      let totalBookings = 0
-      let totalRevenue = 0
-      let totalBedNights = 0
-      let totalPax = 0
-      let totalIncome = 0
-      let totalDisbursements = 0
-      let totalOutstanding = 0
+  // Always calculate statistics from raw booking data to ensure consistency
+  // This ensures "All" and filtered views use the same calculation method
+  const filteredBookings = getAllBookings(data, statusFilter, classFilter, selectedYears)
+  filteredData.summary = calculateSummaryFromBookings(filteredBookings, data.summary)
 
-      Object.keys(combinedData).forEach(yearKey => {
-        const yearData = combinedData[yearKey]
-        if (yearData[classFilter] && yearData[classFilter][statusFilter]) {
-          const stats = yearData[classFilter][statusFilter]
-          totalBookings += stats.count || 0
-          totalRevenue += stats.revenue_total || 0
-          totalBedNights += stats.bed_nights || 0
-          totalPax += stats.pax || 0
-          totalIncome += stats.income || 0
-          totalDisbursements += stats.disbursements || 0
-          totalOutstanding += stats.outstanding || 0
-        }
-      })
-
-      filteredData.summary = {
-        ...data.summary,
-        total_bookings: totalBookings || data.summary.total_bookings,
-        total_revenue: totalRevenue,
-        total_bed_nights: totalBedNights,
-        total_pax: totalPax || data.summary.total_pax,
-        total_income: totalIncome,
-        total_disbursements: totalDisbursements,
-        total_outstanding: totalOutstanding,
+  // Filter revenue_trends by selected years if years are specified
+  if (selectedYears.length > 0 && data.revenue_trends) {
+    const filteredRevenueTrends: any = {}
+    Object.entries(data.revenue_trends).forEach(([key, value]) => {
+      const [year] = key.split('-')
+      const yearNum = parseInt(year)
+      if (!isNaN(yearNum) && selectedYears.includes(yearNum)) {
+        filteredRevenueTrends[key] = value
       }
-    }
-  } else if (classFilter !== 'All') {
-    // Filter by class only
-    const bookingClassData = data.by_booking_class?.[classFilter]
-    if (bookingClassData) {
-      filteredData.summary = {
-        ...data.summary,
-        total_bookings: bookingClassData.count,
-        total_revenue: bookingClassData.revenue,
-        total_bed_nights: bookingClassData.bed_nights,
-        total_pax: bookingClassData.pax,
-        total_income: bookingClassData.income,
-        total_disbursements: bookingClassData.disbursements,
-        total_outstanding: bookingClassData.outstanding,
-      }
-    }
-  } else if (statusFilter !== 'All') {
-    // Filter by status only
-    const statusData = data.by_status?.[statusFilter]
-    if (statusData) {
-      filteredData.summary = {
-        ...data.summary,
-        total_bookings: statusData.count,
-        total_revenue: statusData.revenue,
-        total_bed_nights: statusData.bed_nights,
-        total_pax: statusData.pax,
-        total_income: statusData.income,
-        total_disbursements: statusData.disbursements,
-        total_outstanding: statusData.outstanding,
-      }
-    }
+    })
+    filteredData.revenue_trends = filteredRevenueTrends
   }
 
   // Filter by_status data
@@ -123,7 +71,172 @@ export function filterDashboardData(
     }
   }
 
+  // Filter revenue_trends based on status and/or class filters
+  // Reconstruct from monthly_breakdown data which has status and class info
+  if ((statusFilter !== 'All' || classFilter !== 'All') && data.monthly_breakdown) {
+    const filteredRevenueTrends: any = {}
+    
+    Object.keys(data.monthly_breakdown || {}).forEach(year => {
+      const yearData = data.monthly_breakdown[year]
+      Object.keys(yearData || {}).forEach(month => {
+        const monthData = yearData[month]
+        
+        // Check if we should include this month based on filters
+        let shouldInclude = false
+        let monthRevenue = 0
+        let monthBedNights = 0
+        let monthBookings = 0
+        
+        if (statusFilter !== 'All' && classFilter !== 'All') {
+          // Both filters: use monthly_breakdown_combined
+          if (data.monthly_breakdown_combined?.[year]?.[month]?.[classFilter]?.[statusFilter]) {
+            const stats = data.monthly_breakdown_combined[year][month][classFilter][statusFilter]
+            monthRevenue = stats.revenue_total || 0
+            monthBedNights = stats.bed_nights || 0
+            monthBookings = stats.count || 0
+            shouldInclude = true
+          }
+        } else if (classFilter !== 'All') {
+          // Class filter only: use monthly_breakdown_by_class
+          if (data.monthly_breakdown_by_class?.[year]?.[month]?.[classFilter]) {
+            const stats = data.monthly_breakdown_by_class[year][month][classFilter]
+            monthRevenue = stats.revenue_total || 0
+            monthBedNights = stats.bed_nights || 0
+            monthBookings = (monthRevenue > 0 || monthBedNights > 0) ? 1 : 0 // Approximate
+            shouldInclude = true
+          }
+        } else if (statusFilter !== 'All') {
+          // Status filter only: use monthly_breakdown
+          if (monthData[statusFilter]) {
+            const stats = monthData[statusFilter]
+            monthRevenue = stats.revenue_total || 0
+            monthBedNights = stats.bed_nights || 0
+            monthBookings = (monthRevenue > 0 || monthBedNights > 0) ? 1 : 0 // Approximate
+            shouldInclude = true
+          }
+        }
+        
+        if (shouldInclude) {
+          const key = `${year}-${parseInt(month).toString().padStart(2, '0')}`
+          if (!filteredRevenueTrends[key]) {
+            filteredRevenueTrends[key] = { revenue: 0, bed_nights: 0, bookings: 0 }
+          }
+          filteredRevenueTrends[key].revenue += monthRevenue
+          filteredRevenueTrends[key].bed_nights += monthBedNights
+          filteredRevenueTrends[key].bookings += monthBookings
+        }
+      })
+    })
+    
+    filteredData.revenue_trends = filteredRevenueTrends
+  }
+
   return filteredData
+}
+
+/**
+ * Calculate summary statistics from filtered booking data
+ */
+export function calculateSummaryFromBookings(
+  bookings: any[],
+  originalSummary: SummaryData
+): SummaryData {
+  if (!bookings || bookings.length === 0) {
+    return {
+      ...originalSummary,
+      total_bookings: 0,
+      total_revenue: 0,
+      total_bed_nights: 0,
+      total_pax: 0,
+      total_income: 0,
+      total_disbursements: 0,
+      total_outstanding: 0,
+    }
+  }
+
+  let totalBookings = 0
+  let totalRevenue = 0
+  let totalBedNights = 0
+  let totalPax = 0
+  let totalIncome = 0
+  let totalDisbursements = 0
+  let totalOutstanding = 0
+
+  bookings.forEach((booking: any) => {
+    totalBookings++
+    
+    const revenue = parseFloat(booking['Revenue Total'] || booking.revenue_total || booking.Revenue_Total || 0)
+    const bedNights = parseInt(booking['Bed nights'] || booking.bed_nights || booking.Bed_nights || 0)
+    const pax = parseInt(booking.PAX || booking.pax || 0)
+    const income = parseFloat(booking.Income || booking.income || 0)
+    const disbursements = parseFloat(booking.Disbursements || booking.disbursements || 0)
+    const outstanding = parseFloat(booking['Total amount outstanding'] || booking.outstanding || booking.Outstanding || 0)
+
+    totalRevenue += revenue
+    totalBedNights += bedNights
+    totalPax += pax
+    totalIncome += income
+    totalDisbursements += disbursements
+    totalOutstanding += outstanding
+  })
+
+  return {
+    ...originalSummary,
+    total_bookings: totalBookings,
+    total_revenue: totalRevenue,
+    total_bed_nights: totalBedNights,
+    total_pax: totalPax,
+    total_income: totalIncome,
+    total_disbursements: totalDisbursements,
+    total_outstanding: totalOutstanding,
+  }
+}
+
+/**
+ * Get all bookings from monthly_bookings data, optionally filtered
+ */
+export function getAllBookings(
+  data: DashboardData,
+  statusFilter: string = 'All',
+  classFilter: string = 'All',
+  selectedYears: number[] = []
+): any[] {
+  if (!data?.monthly_bookings) return []
+
+  const allBookings: any[] = []
+
+  Object.entries(data.monthly_bookings).forEach(([year, yearData]: [string, any]) => {
+    const yearNum = parseInt(year)
+    
+    // Apply year filter if years are specified
+    if (selectedYears.length > 0 && !selectedYears.includes(yearNum)) {
+      return
+    }
+
+    if (yearData && typeof yearData === 'object') {
+      Object.values(yearData).forEach((monthBookings: any) => {
+        if (Array.isArray(monthBookings)) {
+          monthBookings.forEach((booking: any) => {
+            // Apply status filter
+            if (statusFilter !== 'All') {
+              const status = booking.Status || booking.status || booking['Booking Status']
+              if (status !== statusFilter) return
+            }
+
+            // Apply class filter
+            if (classFilter !== 'All') {
+              const bookingClass = booking['Booking Class'] || booking.booking_class || booking.Booking_Class
+              if (bookingClass !== classFilter) return
+            }
+
+            allBookings.push(booking)
+          })
+        }
+      })
+    }
+  })
+
+  return allBookings
 }
 
 export function getFilteredTopSources(

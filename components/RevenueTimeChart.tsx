@@ -19,7 +19,7 @@ export default function RevenueTimeChart({ data }: RevenueTimeChartProps) {
     const dataMap = new Map<string, number>()
 
     // revenue_trends structure: { "2021-07": { revenue: 1267.5, bookings: 1, bed_nights: 9 }, ... }
-    Object.entries(data.revenue_trends).forEach(([period, periodData]: [string, any]) => {
+    Object.entries(data?.revenue_trends || {}).forEach(([period, periodData]: [string, any]) => {
       const [year, month] = period.split('-')
       let key: string
       let revenue = periodData.revenue || 0

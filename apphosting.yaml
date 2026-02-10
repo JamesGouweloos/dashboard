@@ -7,17 +7,17 @@ runConfig:
   # cpu: 1
   # memoryMiB: 512
 
-# Environment variables and secrets.
-# env:
-  # Configure environment variables.
-  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
-
-  # Grant access to secrets in Cloud Secret Manager.
-  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-  # - variable: MY_SECRET
-  #   secret: mySecretRef
+  # Environment variables and secrets.
+env:
+  - variable: OPENWEATHER_API_KEY
+    secret: OPENWEATHER_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+  # Firebase Admin SDK credentials for Firestore access
+  # Note: Secret name is FIREBASE_SERVICE_ACCOUNT_KEY but env var is SERVICE_ACCOUNT_KEY
+  # (FIREBASE_ prefix is reserved, so Firebase CLI uses SERVICE_ACCOUNT_KEY)
+  - variable: SERVICE_ACCOUNT_KEY
+    secret: FIREBASE_SERVICE_ACCOUNT_KEY
+    availability:
+      - RUNTIME

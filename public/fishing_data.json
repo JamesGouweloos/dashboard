@@ -1,0 +1,912 @@
+[
+  {
+    "id": "catch-1762782569424-qcrskp14n",
+    "date": "2025-11-06",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 2,
+    "location": {
+      "lat": -15.753266874306316,
+      "lng": 29.22964096069336
+    },
+    "weather": {
+      "temperature": 35.3,
+      "feelsLike": 35,
+      "humidity": 30,
+      "pressure": 1010,
+      "windSpeed": 4.4,
+      "windDirection": 90,
+      "visibility": 10,
+      "clouds": 89,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-11-06T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782584722-zh44oh9ht",
+    "date": "2025-11-06",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 2,
+    "location": {
+      "lat": -15.752771232499313,
+      "lng": 29.23444747924805
+    },
+    "weather": {
+      "temperature": 35.3,
+      "feelsLike": 35,
+      "humidity": 30,
+      "pressure": 1010,
+      "windSpeed": 4.4,
+      "windDirection": 90,
+      "visibility": 10,
+      "clouds": 89,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-11-06T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782603623-xpvyb0gun",
+    "date": "2025-11-06",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 5,
+    "location": {
+      "lat": -15.755249429439134,
+      "lng": 29.23221588134766
+    },
+    "weather": {
+      "temperature": 35.3,
+      "feelsLike": 35.1,
+      "humidity": 30,
+      "pressure": 1010,
+      "windSpeed": 4.4,
+      "windDirection": 89,
+      "visibility": 10,
+      "clouds": 89,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-11-06T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782632743-85gjladpl",
+    "date": "2025-11-04",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 5,
+    "location": {
+      "lat": -15.753617953187838,
+      "lng": 29.232172966003418
+    },
+    "weather": {
+      "temperature": 32.5,
+      "feelsLike": 32.6,
+      "humidity": 38,
+      "pressure": 1016,
+      "windSpeed": 5.3,
+      "windDirection": 39,
+      "visibility": 0,
+      "clouds": 22,
+      "conditions": "Clouds",
+      "description": "few clouds",
+      "icon": "02d"
+    },
+    "timestamp": "2025-11-04T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782676323-7iwsry4bj",
+    "date": "2025-11-02",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 3,
+    "location": {
+      "lat": -15.752977750065888,
+      "lng": 29.23142194747925
+    },
+    "weather": {
+      "temperature": 39.6,
+      "feelsLike": 38.8,
+      "humidity": 20,
+      "pressure": 1010,
+      "windSpeed": 0.7,
+      "windDirection": 40,
+      "visibility": 0,
+      "clouds": 77,
+      "conditions": "Clouds",
+      "description": "broken clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-11-02T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782690764-sixiul8ui",
+    "date": "2025-11-02",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 3.5,
+    "location": {
+      "lat": -15.756034185499292,
+      "lng": 29.232409000396732
+    },
+    "weather": {
+      "temperature": 39.6,
+      "feelsLike": 38.8,
+      "humidity": 20,
+      "pressure": 1010,
+      "windSpeed": 0.7,
+      "windDirection": 40,
+      "visibility": 0,
+      "clouds": 77,
+      "conditions": "Clouds",
+      "description": "broken clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-11-02T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782714468-b5hnlvd6i",
+    "date": "2025-11-01",
+    "time": "09:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 6,
+    "location": {
+      "lat": -15.75425815429183,
+      "lng": 29.232387542724613
+    },
+    "weather": {
+      "temperature": 30.1,
+      "feelsLike": 29.2,
+      "humidity": 34,
+      "pressure": 1014,
+      "windSpeed": 3.9,
+      "windDirection": 46,
+      "visibility": 0,
+      "clouds": 100,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-11-01T07:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782744903-0h9c4tmfj",
+    "date": "2025-10-30",
+    "time": "09:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 8,
+    "location": {
+      "lat": -15.753142963967951,
+      "lng": 29.23247337341309
+    },
+    "weather": {
+      "temperature": 31.5,
+      "feelsLike": 30.6,
+      "humidity": 33,
+      "pressure": 1014,
+      "windSpeed": 4.9,
+      "windDirection": 60,
+      "visibility": 0,
+      "clouds": 18,
+      "conditions": "Clouds",
+      "description": "few clouds",
+      "icon": "02d"
+    },
+    "timestamp": "2025-10-30T07:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782756819-4uudnsavz",
+    "date": "2025-10-30",
+    "time": "09:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 7,
+    "location": {
+      "lat": -15.75617874549539,
+      "lng": 29.232151508331302
+    },
+    "weather": {
+      "temperature": 31.5,
+      "feelsLike": 30.6,
+      "humidity": 33,
+      "pressure": 1014,
+      "windSpeed": 4.9,
+      "windDirection": 60,
+      "visibility": 0,
+      "clouds": 18,
+      "conditions": "Clouds",
+      "description": "few clouds",
+      "icon": "02d"
+    },
+    "timestamp": "2025-10-30T07:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782768333-oo44akb3g",
+    "date": "2025-10-30",
+    "time": "09:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 3,
+    "location": {
+      "lat": -15.755600504893533,
+      "lng": 29.231529235839847
+    },
+    "weather": {
+      "temperature": 31.5,
+      "feelsLike": 30.6,
+      "humidity": 33,
+      "pressure": 1014,
+      "windSpeed": 4.9,
+      "windDirection": 60,
+      "visibility": 0,
+      "clouds": 18,
+      "conditions": "Clouds",
+      "description": "few clouds",
+      "icon": "02d"
+    },
+    "timestamp": "2025-10-30T07:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782786741-3rob1dq9d",
+    "date": "2025-10-30",
+    "time": "16:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 8,
+    "location": {
+      "lat": -15.753308177735644,
+      "lng": 29.23193693161011
+    },
+    "weather": {
+      "temperature": 38.8,
+      "feelsLike": 39.5,
+      "humidity": 26,
+      "pressure": 1007,
+      "windSpeed": 1.2,
+      "windDirection": 213,
+      "visibility": 0,
+      "clouds": 90,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-30T14:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782794234-kinz8mza5",
+    "date": "2025-10-30",
+    "time": "16:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 3,
+    "location": {
+      "lat": -15.75469183776412,
+      "lng": 29.232108592987064
+    },
+    "weather": {
+      "temperature": 38.8,
+      "feelsLike": 39.5,
+      "humidity": 26,
+      "pressure": 1007,
+      "windSpeed": 1.2,
+      "windDirection": 213,
+      "visibility": 0,
+      "clouds": 90,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-30T14:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782824911-y0jso3knw",
+    "date": "2025-10-29",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4,
+    "location": {
+      "lat": -15.755868973949159,
+      "lng": 29.231615066528324
+    },
+    "weather": {
+      "temperature": 36.6,
+      "feelsLike": 35.7,
+      "humidity": 24,
+      "pressure": 1012,
+      "windSpeed": 4.4,
+      "windDirection": 56,
+      "visibility": 0,
+      "clouds": 34,
+      "conditions": "Clouds",
+      "description": "scattered clouds",
+      "icon": "03d"
+    },
+    "timestamp": "2025-10-29T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782862220-0t32zt7zr",
+    "date": "2025-10-28",
+    "time": "16:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4,
+    "location": {
+      "lat": -15.75434076073891,
+      "lng": 29.23097133636475
+    },
+    "weather": {
+      "temperature": 38.4,
+      "feelsLike": 38.6,
+      "humidity": 25,
+      "pressure": 1007,
+      "windSpeed": 2.3,
+      "windDirection": 135,
+      "visibility": 0,
+      "clouds": 86,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-28T14:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782875386-yv5nauiln",
+    "date": "2025-10-28",
+    "time": "16:00",
+    "guide": "Historical",
+    "species": "Vundu",
+    "weight": 30,
+    "location": {
+      "lat": -15.753803818232372,
+      "lng": 29.232001304626465
+    },
+    "weather": {
+      "temperature": 38.4,
+      "feelsLike": 38.6,
+      "humidity": 25,
+      "pressure": 1007,
+      "windSpeed": 2.3,
+      "windDirection": 135,
+      "visibility": 0,
+      "clouds": 86,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-28T14:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782897113-rmomlm0i6",
+    "date": "2025-10-27",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 5,
+    "location": {
+      "lat": -15.755786368123687,
+      "lng": 29.233374595642093
+    },
+    "weather": {
+      "temperature": 40.2,
+      "feelsLike": 38.8,
+      "humidity": 17,
+      "pressure": 1009,
+      "windSpeed": 1.5,
+      "windDirection": 7,
+      "visibility": 0,
+      "clouds": 6,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-27T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782906883-n9wdp5i3i",
+    "date": "2025-10-27",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4,
+    "location": {
+      "lat": -15.75483639871576,
+      "lng": 29.232645034790043
+    },
+    "weather": {
+      "temperature": 40.2,
+      "feelsLike": 38.8,
+      "humidity": 17,
+      "pressure": 1009,
+      "windSpeed": 1.5,
+      "windDirection": 7,
+      "visibility": 0,
+      "clouds": 6,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-27T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782923533-i56hqxh0u",
+    "date": "2025-10-27",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 3,
+    "location": {
+      "lat": -15.754877701825887,
+      "lng": 29.23341751098633
+    },
+    "weather": {
+      "temperature": 40.2,
+      "feelsLike": 38.8,
+      "humidity": 17,
+      "pressure": 1009,
+      "windSpeed": 1.5,
+      "windDirection": 7,
+      "visibility": 0,
+      "clouds": 6,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-27T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782941139-jgjs5e209",
+    "date": "2025-10-27",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 11.5,
+    "location": {
+      "lat": -15.755373338492337,
+      "lng": 29.231357574462894
+    },
+    "weather": {
+      "temperature": 40.2,
+      "feelsLike": 38.8,
+      "humidity": 17,
+      "pressure": 1009,
+      "windSpeed": 1.5,
+      "windDirection": 7,
+      "visibility": 0,
+      "clouds": 6,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-27T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782951188-rnl31di2v",
+    "date": "2025-10-27",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Vundu",
+    "weight": 23,
+    "location": {
+      "lat": -15.755724413732532,
+      "lng": 29.232280254364017
+    },
+    "weather": {
+      "temperature": 40.2,
+      "feelsLike": 38.8,
+      "humidity": 17,
+      "pressure": 1009,
+      "windSpeed": 1.5,
+      "windDirection": 7,
+      "visibility": 0,
+      "clouds": 6,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-27T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782960896-22xfz4pdj",
+    "date": "2025-10-27",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Vundu",
+    "weight": 15,
+    "location": {
+      "lat": -15.752667973637289,
+      "lng": 29.23172235488892
+    },
+    "weather": {
+      "temperature": 40.2,
+      "feelsLike": 38.8,
+      "humidity": 17,
+      "pressure": 1009,
+      "windSpeed": 1.5,
+      "windDirection": 7,
+      "visibility": 0,
+      "clouds": 6,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-27T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762782997410-t7890kska",
+    "date": "2025-10-26",
+    "time": "17:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4.5,
+    "location": {
+      "lat": -15.754774444034792,
+      "lng": 29.231507778167728
+    },
+    "weather": {
+      "temperature": 41,
+      "feelsLike": 41.6,
+      "humidity": 22,
+      "pressure": 1004,
+      "windSpeed": 3.2,
+      "windDirection": 86,
+      "visibility": 0,
+      "clouds": 5,
+      "conditions": "Clear",
+      "description": "clear sky",
+      "icon": "01d"
+    },
+    "timestamp": "2025-10-26T15:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783020686-n1ocmzkt0",
+    "date": "2025-10-25",
+    "time": "09:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4.5,
+    "location": {
+      "lat": -15.75427880590675,
+      "lng": 29.231400489807132
+    },
+    "weather": {
+      "temperature": 31.3,
+      "feelsLike": 30.7,
+      "humidity": 36,
+      "pressure": 1014,
+      "windSpeed": 4.3,
+      "windDirection": 78,
+      "visibility": 0,
+      "clouds": 23,
+      "conditions": "Clouds",
+      "description": "few clouds",
+      "icon": "02d"
+    },
+    "timestamp": "2025-10-25T07:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783045463-2m8a8kdn5",
+    "date": "2025-10-24",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 5,
+    "location": {
+      "lat": -15.754361412345434,
+      "lng": 29.232151508331302
+    },
+    "weather": {
+      "temperature": 29.3,
+      "feelsLike": 28.9,
+      "humidity": 40,
+      "pressure": 1014,
+      "windSpeed": 2.8,
+      "windDirection": 82,
+      "visibility": 0,
+      "clouds": 86,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-24T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783060285-qljd9q4o7",
+    "date": "2025-10-24",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4.2,
+    "location": {
+      "lat": -15.754299457519574,
+      "lng": 29.233160018920902
+    },
+    "weather": {
+      "temperature": 29.3,
+      "feelsLike": 28.9,
+      "humidity": 40,
+      "pressure": 1014,
+      "windSpeed": 2.8,
+      "windDirection": 82,
+      "visibility": 0,
+      "clouds": 86,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-24T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783073654-n0eopt3j8",
+    "date": "2025-10-24",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Vundu",
+    "weight": 7,
+    "location": {
+      "lat": -15.75425815429183,
+      "lng": 29.231786727905277
+    },
+    "weather": {
+      "temperature": 29.3,
+      "feelsLike": 28.9,
+      "humidity": 40,
+      "pressure": 1014,
+      "windSpeed": 2.8,
+      "windDirection": 82,
+      "visibility": 0,
+      "clouds": 86,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-24T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783101024-o2560axj5",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 6,
+    "location": {
+      "lat": -15.752667973637289,
+      "lng": 29.232001304626465
+    },
+    "weather": {
+      "temperature": 27.5,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783189063-mhbw50qkh",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Vundu",
+    "weight": 10,
+    "location": {
+      "lat": -15.754196199434482,
+      "lng": 29.23273086547852
+    },
+    "weather": {
+      "temperature": 27.5,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783199971-r2xuadtrw",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 13,
+    "location": {
+      "lat": -15.753328829447153,
+      "lng": 29.231786727905277
+    },
+    "weather": {
+      "temperature": 27.5,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783212085-sj38n61i2",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 9,
+    "location": {
+      "lat": -15.753845121552505,
+      "lng": 29.231657981872562
+    },
+    "weather": {
+      "temperature": 27.5,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783222980-sime6ye51",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 7,
+    "location": {
+      "lat": -15.75504291418243,
+      "lng": 29.230885505676273
+    },
+    "weather": {
+      "temperature": 27.4,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783231915-1dqqbfxys",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4,
+    "location": {
+      "lat": -15.755311383975181,
+      "lng": 29.231786727905277
+    },
+    "weather": {
+      "temperature": 27.4,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783243129-5pj9mcbw1",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 4,
+    "location": {
+      "lat": -15.753948379816077,
+      "lng": 29.23118591308594
+    },
+    "weather": {
+      "temperature": 27.5,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783253637-z2h2rhhhs",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Vundu",
+    "weight": 50,
+    "location": {
+      "lat": -15.755352686988722,
+      "lng": 29.232623577117923
+    },
+    "weather": {
+      "temperature": 27.4,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  },
+  {
+    "id": "catch-1762783268621-exn61a2jt",
+    "date": "2025-10-23",
+    "time": "12:00",
+    "guide": "Historical",
+    "species": "Tiger Fish",
+    "weight": 35,
+    "location": {
+      "lat": -15.754629883039058,
+      "lng": 29.231100082397464
+    },
+    "weather": {
+      "temperature": 27.5,
+      "feelsLike": 28,
+      "humidity": 52,
+      "pressure": 1017,
+      "windSpeed": 5.7,
+      "windDirection": 81,
+      "visibility": 0,
+      "clouds": 98,
+      "conditions": "Clouds",
+      "description": "overcast clouds",
+      "icon": "04d"
+    },
+    "timestamp": "2025-10-23T10:00:00.000Z"
+  }
+]
