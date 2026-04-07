@@ -1,56 +1,94 @@
 import { NextResponse } from 'next/server'
-import { initializeApp } from 'firebase/app'
-import { getFirestore, doc, getDoc } from 'firebase/firestore'
+import { getAdminDb } from '@/lib/firebase-admin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD70vqTEpkDoxHrA1b0C3uJhESLti8k0uI",
-  authDomain: "dashboard-baines.firebaseapp.com",
-  projectId: "dashboard-baines",
-  storageBucket: "dashboard-baines.firebasestorage.app",
-  messagingSenderId: "490088692843",
-  appId: "1:490088692843:web:87523298f218fa3570c52e"
+type Category = 'Accommodation' | 'Park Fees & Levies' | 'Travel' | 'Activities' | 'Bar' | 'Shop'
+type IncomeType = 'Income' | 'Disbursements'
+
+interface RevenueConfig {
+  itemToCategory: Record<string, Category>
+  categoryToType: Record<Category, IncomeType>
+  lastUpdated: string | null
 }
 
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
+const defaultConfig: RevenueConfig = {
+  itemToCategory: {},
+  categoryToType: {
+    'Accommodation': 'Income',
+    'Park Fees & Levies': 'Disbursements',
+    'Travel': 'Income',
+    'Activities': 'Income',
+    'Bar': 'Income',
+    'Shop': 'Income'
+  },
+  lastUpdated: null
+}
+
+function normalizeConfig(data: any): RevenueConfig {
+  if (!data || typeof data !== 'object') {
+    return defaultConfig
+  }
+
+  const validCategories: Category[] = [
+    'Accommodation',
+    'Park Fees & Levies',
+    'Travel',
+    'Activities',
+    'Bar',
+    'Shop'
+  ]
+  const validTypes: IncomeType[] = ['Income', 'Disbursements']
+
+  const rawItemMap = data.itemToCategory && typeof data.itemToCategory === 'object'
+    ? data.itemToCategory
+    : {}
+
+  const itemToCategory: Record<string, Category> = {}
+  Object.entries(rawItemMap).forEach(([item, category]) => {
+    if (typeof item === 'string' && validCategories.includes(category as Category)) {
+      itemToCategory[item] = category as Category
+    }
+  })
+
+  const categoryToType: Record<Category, IncomeType> = { ...defaultConfig.categoryToType }
+  if (data.categoryToType && typeof data.categoryToType === 'object') {
+    Object.entries(data.categoryToType).forEach(([category, type]) => {
+      if (validCategories.includes(category as Category) && validTypes.includes(type as IncomeType)) {
+        categoryToType[category as Category] = type as IncomeType
+      }
+    })
+  }
+
+  return {
+    itemToCategory,
+    categoryToType,
+    lastUpdated: typeof data.lastUpdated === 'string' ? data.lastUpdated : null
+  }
+}
 
 export async function GET() {
   try {
-    const ref = doc(db, 'revenue_config', 'categorization')
-    const snap = await getDoc(ref)
+    const db = getAdminDb()
+    const snap = await db.doc('revenue_config/categorization').get()
     
-    if (snap.exists()) {
-      const data = snap.data()
-      return NextResponse.json(data, {
+    if (snap.exists) {
+      return NextResponse.json(normalizeConfig(snap.data()), {
         status: 200,
         headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
       })
     } else {
-      // Return default configuration
-      return NextResponse.json({
-        itemToCategory: {},
-        categoryToType: {
-          'Accommodation': 'Income',
-          'Park Fees & Levies': 'Disbursements',
-          'Travel': 'Income',
-          'Activities': 'Income',
-          'Bar': 'Income',
-          'Shop': 'Income'
-        },
-        lastUpdated: null
-      }, {
+      return NextResponse.json(defaultConfig, {
         status: 200,
         headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
       })
     }
   } catch (error) {
     console.error('Error fetching revenue config:', error)
-    return NextResponse.json({ error: 'Failed to load revenue configuration' }, {
-      status: 500,
+    // Return defaults instead of failing the UI if backend read is unavailable.
+    return NextResponse.json(defaultConfig, {
+      status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
     })
   }
