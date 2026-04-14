@@ -35,17 +35,119 @@ def _get_firebase_app():
 
 # Initialize Firestore client only when needed
 def get_firestore_client():
-    """Get Firestore client, handling local vs production environments"""
+    """Get Firestore client using Firebase Admin SDK"""
     global _firestore_client
     if _firestore_client is None:
         try:
-            from google.cloud import firestore
+            from firebase_admin import firestore
             _get_firebase_app()  # Ensure Firebase is initialized
-            _firestore_client = firestore.Client()
+            _firestore_client = firestore.client()
         except Exception as e:
             print(f"Warning: Could not initialize Firestore client: {e}")
             return None
     return _firestore_client
+
+def _delete_collection_docs(collection_name):
+    """Delete every document in a top-level collection."""
+    db = get_firestore_client()
+    if db is None:
+        raise RuntimeError("Firestore client not initialized")
+    docs = db.collection(collection_name).stream()
+    deleted = 0
+    for doc in docs:
+        doc.reference.delete()
+        deleted += 1
+    print(f"Deleted {deleted} docs from {collection_name}")
+    return deleted
+
+def persist_dashboard_data(dashboard_data):
+    """Persist processed booking dashboard data to Firestore."""
+    db = get_firestore_client()
+    if db is None:
+        raise RuntimeError("Firestore client not initialized")
+
+    monthly_bookings = dashboard_data.get('monthly_bookings', {}) or {}
+
+    per_year_keys = [
+        'yearly_breakdown',
+        'monthly_breakdown',
+        'yearly_breakdown_by_class',
+        'monthly_breakdown_by_class',
+        'yearly_breakdown_combined',
+        'monthly_breakdown_combined'
+    ]
+
+    # Keep the main dashboard doc small (exclude per-year maps + monthly bookings)
+    main_data = {
+        key: value
+        for key, value in dashboard_data.items()
+        if key not in per_year_keys and key != 'monthly_bookings'
+    }
+    main_data['last_updated'] = datetime.now().isoformat()
+    db.document('dashboard/data').set(main_data)
+
+    # Clean and rewrite per-year docs
+    _delete_collection_docs('dashboard_data_by_year')
+    year_set = set()
+    for key in per_year_keys:
+        per_year_map = dashboard_data.get(key, {}) or {}
+        year_set.update(per_year_map.keys())
+
+    revenue_trends = dashboard_data.get('revenue_trends', {}) or {}
+    for year in sorted(year_set):
+        year_revenue_trends = {
+            month_key: value
+            for month_key, value in revenue_trends.items()
+            if str(month_key).startswith(f"{year}-")
+        }
+        payload = {
+            'year': str(year),
+            'revenue_trends': year_revenue_trends,
+            'yearly_breakdown': (dashboard_data.get('yearly_breakdown', {}) or {}).get(year, {}),
+            'monthly_breakdown': (dashboard_data.get('monthly_breakdown', {}) or {}).get(year, {}),
+            'yearly_breakdown_by_class': (dashboard_data.get('yearly_breakdown_by_class', {}) or {}).get(year, {}),
+            'monthly_breakdown_by_class': (dashboard_data.get('monthly_breakdown_by_class', {}) or {}).get(year, {}),
+            'yearly_breakdown_combined': (dashboard_data.get('yearly_breakdown_combined', {}) or {}).get(year, {}),
+            'monthly_breakdown_combined': (dashboard_data.get('monthly_breakdown_combined', {}) or {}).get(year, {}),
+            'last_updated': datetime.now().isoformat()
+        }
+        db.document(f'dashboard_data_by_year/{year}').set(payload)
+
+    # Clean and rewrite monthly bookings docs
+    _delete_collection_docs('dashboard_monthly_bookings')
+    monthly_doc_count = 0
+    for year, months in monthly_bookings.items():
+        for month, bookings in (months or {}).items():
+            try:
+                month_normalized = str(int(float(month)))
+            except Exception:
+                month_normalized = str(month)
+            doc_id = f"{year}-{month_normalized}"
+            db.document(f'dashboard_monthly_bookings/{doc_id}').set({
+                'year': str(year),
+                'month': month_normalized,
+                'bookings': bookings,
+                'last_updated': datetime.now().isoformat()
+            })
+            monthly_doc_count += 1
+
+    return {
+        'main_doc': 'dashboard/data',
+        'per_year_docs': len(year_set),
+        'monthly_booking_docs': monthly_doc_count
+    }
+
+def persist_occupancy_data(occupancy_data):
+    """Persist processed occupancy data to Firestore."""
+    db = get_firestore_client()
+    if db is None:
+        raise RuntimeError("Firestore client not initialized")
+    payload = {
+        **occupancy_data,
+        'last_updated': datetime.now().isoformat()
+    }
+    db.document('occupancy/data').set(payload)
+    return {'doc': 'occupancy/data'}
 
 def load_and_clean_data(csv_content: str):
     """Load and clean the booking data from CSV string with multi-row header"""
@@ -732,6 +834,10 @@ def process_booking_data(req: https_fn.Request) -> https_fn.Response:
             'summary': breakdowns['summary'],
             'dashboard_data': dashboard_data
         }
+
+        # Persist processed data inside the Cloud Function using Admin SDK.
+        storage_result = persist_dashboard_data(dashboard_data)
+        response_data['storage'] = storage_result
         
         print(f"Processing completed: {breakdowns['summary']['total_bookings']} bookings processed")
         
@@ -1127,6 +1233,9 @@ def process_occupancy_report(req: https_fn.Request) -> https_fn.Response:
             'summary': occupancy_data['summary'],
             'occupancy_data': occupancy_data
         }
+
+        storage_result = persist_occupancy_data(occupancy_data)
+        response_data['storage'] = storage_result
         
         print(f"Processing completed: {occupancy_data['summary']['total_occupancy']} total occupancy")
         
