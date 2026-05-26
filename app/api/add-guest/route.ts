@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Create new guest record
     const newGuest = {
-      'Year': String(body.year || new Date().getFullYear()),
+      'Year': parseInt(body.year) || new Date().getFullYear(),
       'Month': parseInt(body.month) || new Date().getMonth() + 1,
       'Guest No.': body.guestNo || '',
       'BOOKING NAME': body.bookingName || '',

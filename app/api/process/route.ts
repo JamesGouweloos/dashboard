@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { initializeApp } from 'firebase/app'
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
+import { getAdminDb } from '@/lib/firebase-admin'
+import { verifyApiAuth } from '@/lib/api-auth'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD70vqTEpkDoxHrA1b0C3uJhESLti8k0uI",
-  authDomain: "dashboard-baines.firebaseapp.com",
-  projectId: "dashboard-baines",
-  storageBucket: "dashboard-baines.firebasestorage.app",
-  messagingSenderId: "490088692843",
-  appId: "1:490088692843:web:87523298f218fa3570c52e"
-}
-
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
 
 function applyBusinessRules(data: any[]) {
   console.log('Applying business rules to data...')
@@ -531,19 +518,23 @@ function createCompleteBreakdowns(data: any[]) {
 }
 
 export async function POST(request: NextRequest) {
+  const authResult = await verifyApiAuth(request, 'super_admin')
+  if (authResult instanceof NextResponse) return authResult
+
   try {
     console.log('Reprocessing stored data...')
-    
+
     // Get raw data from Firestore
-    const rawDataDoc = await getDoc(doc(db, 'dashboard', 'raw_data'))
-    
-    if (!rawDataDoc.exists()) {
+    const adminDb = getAdminDb()
+    const rawDataDoc = await adminDb.doc('dashboard/raw_data').get()
+
+    if (!rawDataDoc.exists) {
       return NextResponse.json({
         error: 'No raw data found. Please upload a CSV file first.'
       }, { status: 404 })
     }
     
-    const rawData = rawDataDoc.data()
+    const rawData = rawDataDoc.data() || {}
     const bookings = rawData.bookings || []
     
     console.log(`Found ${bookings.length} bookings to reprocess`)
