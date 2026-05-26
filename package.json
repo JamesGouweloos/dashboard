@@ -14,6 +14,7 @@
     "@highcharts/map-collection": "^2.3.2",
     "@types/leaflet": "^1.9.21",
     "autoprefixer": "^10.4.16",
+    "exceljs": "^4.4.0",
     "firebase": "^12.4.0",
     "firebase-admin": "^13.6.0",
     "framer-motion": "^10.16.16",

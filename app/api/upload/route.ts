@@ -6,6 +6,145 @@ import { getAdminDb } from '@/lib/firebase-admin'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+type WeeklyBookingRecord = {
+  ref: string
+  name: string
+  status: string
+  bookingClass: string
+  arrivalDate: string
+  totalExclVat: number
+  agent: string
+  source: string
+}
+
+type WeeklyReportResult = {
+  updates: Array<WeeklyBookingRecord & { category: string }>
+  dropOff: Array<WeeklyBookingRecord & { previousStatus: string }>
+}
+
+function getIsoWeekKey(date: Date): string {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
+  const dayNum = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`
+}
+
+function parseDateToIsoDate(value: any): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString().split('T')[0]
+}
+
+function toWeeklyBookingRecord(raw: any): WeeklyBookingRecord | null {
+  const ref = String(raw?.['Reservation #'] ?? raw?.reservation_number ?? '').trim()
+  if (!ref) return null
+  return {
+    ref,
+    name: String(raw?.['Reservation name'] ?? raw?.name ?? '').trim(),
+    status: String(raw?.Status ?? raw?.status ?? 'Unknown').trim() || 'Unknown',
+    bookingClass: String(raw?.['Booking Class'] ?? raw?.booking_class ?? '').trim(),
+    arrivalDate: parseDateToIsoDate(raw?.['Arrival date'] ?? raw?.arrival_date),
+    totalExclVat: parseFloat(String(raw?.['Revenue Total'] ?? raw?.revenue_total ?? 0)) || 0,
+    agent: String(raw?.Agent ?? raw?.agent ?? '').trim(),
+    source: String(raw?.Source ?? raw?.source ?? '').trim()
+  }
+}
+
+function extractWeeklyBookingsFromMonthly(monthlyBookings: any): WeeklyBookingRecord[] {
+  if (!monthlyBookings || typeof monthlyBookings !== 'object') return []
+  const out: WeeklyBookingRecord[] = []
+  Object.values(monthlyBookings).forEach((months: any) => {
+    if (!months || typeof months !== 'object') return
+    Object.values(months).forEach((bookings: any) => {
+      if (!Array.isArray(bookings)) return
+      bookings.forEach((b: any) => {
+        const row = toWeeklyBookingRecord(b)
+        if (row) out.push(row)
+      })
+    })
+  })
+  return out
+}
+
+function buildWeeklyReport(current: WeeklyBookingRecord[], baseline: WeeklyBookingRecord[]): WeeklyReportResult {
+  const baselineByRef = new Map<string, WeeklyBookingRecord>()
+  baseline.forEach(b => baselineByRef.set(b.ref, b))
+  const currentRefs = new Set(current.map(c => c.ref))
+
+  const updates: Array<WeeklyBookingRecord & { category: string }> = []
+  current.forEach(row => {
+    const prev = baselineByRef.get(row.ref)
+    if (!prev && row.status === 'Confirmed') {
+      updates.push({ ...row, category: 'New Confirmed Sales' })
+      return
+    }
+    if (!prev && row.status === 'Provisional') {
+      updates.push({ ...row, category: 'New Provisional Sales' })
+      return
+    }
+    if (prev && prev.status === 'Provisional' && row.status === 'Confirmed') {
+      updates.push({ ...row, category: 'Moved Provisional to Confirmed' })
+    }
+  })
+
+  const dropOff: Array<WeeklyBookingRecord & { previousStatus: string }> = []
+  baseline.forEach(row => {
+    if (row.status !== 'Provisional') return
+    if (currentRefs.has(row.ref)) return
+    dropOff.push({ ...row, previousStatus: row.status })
+  })
+
+  return { updates, dropOff }
+}
+
+async function loadLatestFinalSnapshot(db: any, excludeWeekKey: string): Promise<{ weekKey: string; bookings: WeeklyBookingRecord[] } | null> {
+  const snap = await db.collection('weekly_sales_snapshots')
+    .orderBy('snapshot_at', 'desc')
+    .limit(10)
+    .get()
+
+  for (const doc of snap.docs) {
+    if (doc.id === excludeWeekKey) continue
+    const data = doc.data() || {}
+    if (!data.is_final) continue
+    const bookingsSnap = await db.collection(`weekly_sales_snapshots/${doc.id}/bookings`).get()
+    const bookings = bookingsSnap.docs.map((d: any) => d.data() as WeeklyBookingRecord)
+    return { weekKey: doc.id, bookings }
+  }
+  return null
+}
+
+async function overwriteSnapshotBookings(db: any, weekKey: string, bookings: WeeklyBookingRecord[], nowIso: string) {
+  const snapshotDoc = db.doc(`weekly_sales_snapshots/${weekKey}`)
+  await snapshotDoc.set({
+    week_key: weekKey,
+    snapshot_at: nowIso,
+    is_final: true,
+    booking_count: bookings.length
+  }, { merge: true })
+
+  const existing = await db.collection(`weekly_sales_snapshots/${weekKey}/bookings`).get()
+  const deleteBatch = db.batch()
+  existing.docs.forEach((doc: any) => deleteBatch.delete(doc.ref))
+  if (existing.docs.length > 0) {
+    await deleteBatch.commit()
+  }
+
+  const chunkSize = 400
+  for (let i = 0; i < bookings.length; i += chunkSize) {
+    const batch = db.batch()
+    bookings.slice(i, i + chunkSize).forEach((row, idx) => {
+      const safeRef = (row.ref || `row-${i + idx}`).replace(/[\/#?\[\]]/g, '_')
+      const docId = `${safeRef}-${row.arrivalDate || 'no-date'}-${idx}`
+      batch.set(db.doc(`weekly_sales_snapshots/${weekKey}/bookings/${docId}`), row)
+    })
+    await batch.commit()
+  }
+}
+
 // CSV processing functions
 function parseCSV(csvText: string) {
   const lines = csvText.split('\n')
@@ -818,6 +957,38 @@ export async function POST(request: NextRequest) {
               }
             }
             console.log(`✓ Monthly bookings stored across ${totalDocs} documents in 'dashboard_monthly_bookings'`)
+          }
+
+          // Build/overwrite one weekly sales report per ISO week.
+          // Snapshot is finalized on every upload so the baseline is always current.
+          try {
+            const now = new Date()
+            const nowIso = now.toISOString()
+            const weekKey = getIsoWeekKey(now)
+
+            const currentWeeklyBookings = extractWeeklyBookingsFromMonthly(monthly_bookings || {})
+            const latestSnapshot = await loadLatestFinalSnapshot(db, weekKey)
+            const baselineBookings = latestSnapshot?.bookings || []
+
+            const weeklyReport = buildWeeklyReport(currentWeeklyBookings, baselineBookings)
+            await db.doc(`weekly_sales_reports/${weekKey}`).set({
+              week_key: weekKey,
+              generated_at: nowIso,
+              baseline_snapshot_week: latestSnapshot?.weekKey || null,
+              updates_count: weeklyReport.updates.length,
+              drop_off_count: weeklyReport.dropOff.length,
+              total_current_bookings: currentWeeklyBookings.length,
+              updates: weeklyReport.updates,
+              drop_off: weeklyReport.dropOff,
+              snapshot_finalized: true
+            })
+
+            await overwriteSnapshotBookings(db, weekKey, currentWeeklyBookings, nowIso)
+            console.log(
+              `✓ Weekly report ${weekKey} stored and snapshot finalized (updates=${weeklyReport.updates.length}, drop_off=${weeklyReport.dropOff.length}, bookings=${currentWeeklyBookings.length})`
+            )
+          } catch (weeklyReportError: any) {
+            console.warn('Warning: Weekly snapshot/report generation failed:', weeklyReportError?.message || weeklyReportError)
           }
           
           // Verify data was stored by reading it back
